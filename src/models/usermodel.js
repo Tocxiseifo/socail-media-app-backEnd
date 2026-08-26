@@ -18,7 +18,7 @@ const userSchema = new Schema({
         required:true
     },
     avatar:{
-        type:Number,
+        type:String,
     },
     following:{
         type:Number,

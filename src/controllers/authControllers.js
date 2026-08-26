@@ -42,3 +42,16 @@ export const logIn = async (req , res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const logOut = async (req , res) => {
+    try {
+        const logOut = await userModel.findByIdAndUpdate(req.user_id , {$unset:{refreshToken: ''}} , {new:true})
+        if (!logOut) {
+            return res.status(404).json({msg:"couldn't find this user"})
+        }
+        return res.status(200).json({logout:logOut , msg:"user logged out successfully"})
+    } catch (error) {
+        console.error("Error:", error.message);
+        res.status(500).json({ message: error.message });
+    }
+} 
