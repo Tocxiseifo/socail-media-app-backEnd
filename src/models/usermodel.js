@@ -28,6 +28,9 @@ const userSchema = new Schema({
         type:Number,
         default:0
     },
+    refreshToken:{
+        type:String 
+    }
 },{timestamps:true})
 
 export const userModel = model("user" , userSchema)
