@@ -4,6 +4,8 @@ import 'dotenv/config'
 import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import { authRoutes } from './src/routes/authRoutes.js'
+import { postRoutes } from './src/routes/postRoutes.js'
+import { userRoutes } from './src/routes/userRoutes.js'
 
 dotenv.config()
 const app = express()
@@ -16,6 +18,9 @@ mongoose.connect(DatabaseUrl)
 
 //===============routes===========================
 app.use('/api/auth' , authRoutes)
+app.use('/api/users' , userRoutes)
+app.use('/api/posts' , postRoutes)
+
 //=====================server=====================
 const port = 3000
 app.listen(port , () => {

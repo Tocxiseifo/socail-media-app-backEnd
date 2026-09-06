@@ -11,6 +11,14 @@ const postSchema = new Schema({
     },
     Image:{
         type:[String]
+    },
+    commentCount:{
+        type:Number,
+        default:0
+    },
+    likeCount:{
+        type:Number,
+        default:0
     }
 },{timestamps:true})
 

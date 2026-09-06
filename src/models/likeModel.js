@@ -10,3 +10,5 @@ const likeSchema = new Schema({
         ref:'user'
     }
 })
+
+export const likeModel = model("like" , likeSchema)

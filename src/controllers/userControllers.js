@@ -36,7 +36,7 @@ export const editUser = async (req , res) => {
 export const getAllPosts = async (req , res) => {
     try {
         const {username} = req.params
-        const findUser = await postModel.findById(username)
+        const findUser = await postModel.findById(username).sort({ createdAt: -1 }).lean()
         if (!findUser) {
             return res.status(404).json({msg:"couldn't find this user"})
         }
