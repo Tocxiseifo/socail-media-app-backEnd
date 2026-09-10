@@ -2,6 +2,7 @@ import { commentModel } from "../models/commentModel.js"
 import { likeModel } from "../models/likeModel.js"
 import { postModel } from "../models/postmodel.js"
 
+//====================create post=====================
 export const createPost = async (req , res) => {
     try {
         if (!req.user) {
@@ -16,6 +17,7 @@ export const createPost = async (req , res) => {
     }
 }
 
+//====================fetch all posts=====================
 export const getFeed = async (req , res) => {
     try {
         const getAllFeed = await postModel.find().sort({ createdAt: -1 }).lean()
@@ -29,6 +31,7 @@ export const getFeed = async (req , res) => {
     }
 }
 
+//====================fetch specific post=====================
 export const getPost = async (req , res) => {
     try {
         const {id} = req.params
@@ -43,6 +46,7 @@ export const getPost = async (req , res) => {
     }
 }
 
+//====================edit post=====================
 export const editPost = async (req , res) => {
     try{
         const {content , Image} = req.body
@@ -57,7 +61,7 @@ export const editPost = async (req , res) => {
         res.status(500).json({ message: error.message });
     }
 }
-
+//====================delete post=====================
 export const deletePost = async (req , res) => {
     try{
         const {id} = req.params 
@@ -72,6 +76,7 @@ export const deletePost = async (req , res) => {
     }
 }
 
+//====================crete like=====================
 export const createLike = async (req , res) => {
     try {
         if (!req.user) {
@@ -99,6 +104,7 @@ export const createLike = async (req , res) => {
     }
 }
 
+//====================delete like=====================
 export const deleteLike = async (req , res) => {
     try {
         if (!req.user) {
@@ -123,6 +129,7 @@ export const deleteLike = async (req , res) => {
     }
 }
 
+//====================crete comment=====================
 export const createComment = async (req , res) => {
     try {
         if (!req.user) {
@@ -148,6 +155,7 @@ export const createComment = async (req , res) => {
     }
 }
 
+//====================fetch all comment=====================
 export const getComment = async (req , res) => {
     try {
         const getAllComment = await commentModel.find()
@@ -161,6 +169,7 @@ export const getComment = async (req , res) => {
     }
 }
 
+//====================edit comment=====================
 export const editComment = async (req , res) => {
     try {
         if (!req.user) {
@@ -180,6 +189,7 @@ export const editComment = async (req , res) => {
     }
 }
 
+//====================delete comment=====================
 export const deleteComment = async (req , res) => {
     try {
         if (!req.user) {

@@ -7,7 +7,7 @@ export const verifyUser = async(req , res , next) =>{
         req.user = null
         return res.status(401).json({msg:"missing invalid"})
     }
-    if (!headerValue.startWith('Bearer ')) {
+    if (!headerValue.startsWith('Bearer ')) {
         return res.status(401).json({msg:"error in syntext of token"})        
     }
     const token = headerValue.spilt(' ')[1]
