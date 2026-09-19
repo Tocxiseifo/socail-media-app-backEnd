@@ -6,9 +6,11 @@ import mongoose from 'mongoose'
 import { authRoutes } from './src/routes/authRoutes.js'
 import { postRoutes } from './src/routes/postRoutes.js'
 import { userRoutes } from './src/routes/userRoutes.js'
+import { notificationRoutes } from './src/routes/notificationRoutes.js'
+const app = express()
+app.use(express.json());
 
 dotenv.config()
-const app = express()
 
 const DatabaseUrl = process.env.MONGODB_URL
 mongoose.connect(DatabaseUrl)
@@ -20,9 +22,10 @@ mongoose.connect(DatabaseUrl)
 app.use('/api/auth' , authRoutes)
 app.use('/api/users' , userRoutes)
 app.use('/api/posts' , postRoutes)
+app.use('/api/notifications' , notificationRoutes)
 
 //=====================server=====================
-const port = 3000
+const port = 3300
 app.listen(port , () => {
     console.log(`Server is running on port ${port}`);
 });

@@ -1,5 +1,6 @@
 import { commentModel } from "../models/commentModel.js"
 import { likeModel } from "../models/likeModel.js"
+import { notificationModel } from "../models/notificationModel.js"
 import { postModel } from "../models/postmodel.js"
 
 //====================create post=====================
@@ -24,7 +25,7 @@ export const getFeed = async (req , res) => {
         if (getAllFeed.length === 0) {
             return res.status(400).json({msg:'no feeds found'})
         }
-        return res.status(200).json({msg:"feeds fetched successfully"})
+        return res.status(200).json({msg:"feeds fetched successfully" , feeds:getAllFeed})
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
@@ -84,12 +85,15 @@ export const createLike = async (req , res) => {
         }
         const {id} = req.params
         const post = await postModel.findById(id)
+        if (!post) {
+            return res.states(404).json({msg:"this post not found"})
+        }
         const getLike = await likeModel.findOne({
             user:req.user._id ,
             post:post._id
         })
         if (getLike) {
-            return res.status(404).json({msg:"user already liked this post"})
+            return res.status(409).json({msg:"user already liked this post"})
         }
         const like = await likeModel.create({
             user:req.user._id,
@@ -97,6 +101,16 @@ export const createLike = async (req , res) => {
         })
         post.likeCount += 1 
         await post.save();
+        if(post.author === req.user._id.toString()){ //use toString() function to convert the object into string so you can compare between them
+            return res.status(200).json({msg:"no notification made here"})
+        }else{
+            await notificationModel.create({
+                recipient:post.author,
+                type:"like",
+                sender:req.user._id,
+                targetId:post._id    
+            })
+        }
         res.status(201).json({msg:"you like this post" , Like:like}) 
     } catch (error) {
         console.error("Error:", error.message);
@@ -112,15 +126,18 @@ export const deleteLike = async (req , res) => {
         }
         const {id} = req.params
         const post = await postModel.findById(id)
+        if (!post) {
+            return res.status(404).json({msg:"couldn't find this post"})
+        }
         const getLike = await likeModel.findOne({
             user:req.user._id ,
             post:post._id
         })
-        if (getLike) {
-            return res.status(404).json({msg:"user already like this post"})
+        if (!getLike) {
+            return res.status(404).json({msg:"you can't remove cause u already remove your like"})
         }
-        const removeLike = await likeModel.findByIdAndDelete(getLike)
-        post.likeCount -=1  
+        const removeLike = await likeModel.findByIdAndDelete(getLike._id)
+        post.likeCount-- 
         await post.save();
         res.status(200).json({msg:"you like this post" , Like:removeLike}) 
     } catch (error) {
@@ -141,7 +158,7 @@ export const createComment = async (req , res) => {
         if (!post) {
             return res.status(404).json({msg:"couldn't find this post"})
         }
-        const createComment = await commentModel.crete({
+        const createComment = await commentModel.create({
             post:post._id,
             author:req.user._id,
             content:content

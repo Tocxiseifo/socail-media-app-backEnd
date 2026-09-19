@@ -10,7 +10,7 @@ export const verifyUser = async(req , res , next) =>{
     if (!headerValue.startsWith('Bearer ')) {
         return res.status(401).json({msg:"error in syntext of token"})        
     }
-    const token = headerValue.spilt(' ')[1]
+    const token = headerValue.split(' ')[1]
     if (!token) {
         res.user = null
         return res.status(401).json({msg:"your token is invalid"})

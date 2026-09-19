@@ -1,3 +1,4 @@
+import { followModel } from "../models/followModel.js"
 import { notificationModel } from "../models/notificationModel.js"
 import { postModel } from "../models/postmodel.js"
 import { userModel } from "../models/usermodel.js"
@@ -77,12 +78,36 @@ export const followUser = async (req , res) => {
             return res.status(401).json({msg:"unAuthorized"})
         }
         const {id} = req.params
+        if (req.user._id.toString() === id) {
+            return res.status(400).json({
+                msg: "You can't follow yourself"
+            })
+        }
         const fetchUser = await userModel.findById(id)
         if (!fetchUser) {
             return res.status(404).json({msg:"couldn't find this user"})
         }
+        const existingFollow = await followModel.findOne({
+            follower:req.user._id,
+            following:id
+        })
+        if (existingFollow) {
+            return res.status(409).json({
+                msg: "You already follow this user"
+            })
+        }
+        await followModel.create({
+            follower:req.user._id,
+            following:id
+        })
+        const fetchFollower = await userModel.findById(req.user._id)
+        if (!fetchFollower) {
+            return res.status(409).json({msg:"user is already follow you"})
+        }
+        fetchFollower.following++
         fetchUser.followers++
         await fetchUser.save()
+        await fetchFollower.save()
         const notification = await notificationModel.create({recipient:id , sender:req.user._id , type:"follow" , targetId:id ,isRead:false})
         return res.status(201).json({msg:"user follow successfully" , followUser:fetchUser})
     } catch (error) {
@@ -94,7 +119,7 @@ export const followUser = async (req , res) => {
 //====================fetch all user following=====================
 export const getUserFollowing = async (req , res) => {
     try {
-        if (!req.user) {
+        if (!req.user._id) {
             return res.status(401).json({msg:"unAuthorized"})
         }
         const {id} = req.params
@@ -112,12 +137,27 @@ export const getUserFollowing = async (req , res) => {
 //====================delete following=====================
 export const deleteFollow = async (req , res) => {
     try {
-        if (!req.user) {
+        if (!req.user._id) {
             return res.status(401).json({msg:"unAuthorized"})
         }
         const {id} = req.params
-        const deleteFollow = await userModel.findByIdAndUpdate(id , {$pull:{followers:id}} , {new:true})
-        await userModel.findByIdAndUpdate(id, { $pull: { followers: req.user._id } }, { new: true } );
+        const existingFollow = await followModel.findOne({
+            follower:req.user._id,
+            following:id
+        })
+        if (!existingFollow) {
+            return res.status(404).json({msg:"user already unfollowed"})
+        }
+        const deleteFollow = await followModel.findOneAndDelete({
+            follower:req.user._id,
+            following:id
+        })
+        const fetchUser = await userModel.findById(req.user._id)
+        const fetchFollowing = await userModel.findById(id)
+        fetchUser.following--
+        fetchFollowing.followers--
+        await fetchUser.save()
+        await fetchFollowing.save()
         return res.status(200).json({msg:"user remove following successfully" , removeFollow:deleteFollow})
     } catch (error) {
         console.error("Error:", error.message);

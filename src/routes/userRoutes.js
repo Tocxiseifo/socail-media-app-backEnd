@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyUser } from "../middleware/middlewares.js";
-import { deleteFollow, editUser, getAllPosts, getUser, getUserFollowing } from "../controllers/userControllers.js";
+import { deleteFollow, editUser, followUser, getAllPosts, getFollowers, getUser, getUserFollowing } from "../controllers/userControllers.js";
 
 export const userRoutes = Router()
 
