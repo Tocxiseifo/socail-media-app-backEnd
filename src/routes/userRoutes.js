@@ -5,10 +5,10 @@ import { deleteFollow, editUser, followUser, getAllPosts, getFollowers, getUser,
 export const userRoutes = Router()
 
 
-userRoutes.patch('/me' , verifyUser , editUser)
 userRoutes.get('/:username' , verifyUser , getUser)
 userRoutes.get('/:username/post' , verifyUser , getAllPosts)
 userRoutes.get('/:id/followers' , verifyUser , getFollowers)
 userRoutes.get('/:id/following' , verifyUser , getUserFollowing)
 userRoutes.post('/:id/follow' , verifyUser , followUser)
 userRoutes.delete('/:id/follow' , verifyUser , deleteFollow)
+userRoutes.patch('/me' , verifyUser , editUser)

@@ -2,7 +2,6 @@ import { followModel } from "../models/followModel.js"
 import { notificationModel } from "../models/notificationModel.js"
 import { postModel } from "../models/postmodel.js"
 import { userModel } from "../models/usermodel.js"
-import { getNotifications } from "./notificationController.js"
 
 //====================fetch user data=====================
 export const getUser = async (req , res) => {
@@ -42,11 +41,15 @@ export const editUser = async (req , res) => {
 export const getAllPosts = async (req , res) => {
     try {
         const {username} = req.params
-        const findUser = await postModel.findById(username).sort({ createdAt: -1 }).lean()
+        const findUser = await userModel.findById(username)
         if (!findUser) {
             return res.status(404).json({msg:"couldn't find this user"})
         }
-        return res.status(200).json({msg:"user posts fetched successfully" , userPosts:findUser})
+        const getUserPost = await postModel.find({author:findUser._id}).sort({ createdAt: -1 }).lean()
+        if (getUserPost.length === 0) {
+            return res.status(404).json({msg:"couldn't find user"})
+        }
+        return res.status(200).json({msg:"user posts fetched successfully" , userPosts:getUserPost})
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
@@ -70,6 +73,21 @@ export const getFollowers = async (req , res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+//====================fetch my posts function=====================
+export const getMyPosts = async (req , res) => {
+    try {
+        const getMyPosts = await postModel.find({author:req.user._id}).sort({ createdAt: -1 }).lean()
+        if (getMyPosts.length === 0) {
+            return res.status(404).json({msg:"couldn't find your posts"})
+        }
+        return res.status(200).json({msg:"user posts fetched successfully" , myPosts:getMyPosts})
+    } catch (error) {
+        console.error("Error:", error.message);
+        res.status(500).json({ message: error.message });
+    }
+}
+
 
 //====================follow user function=====================
 export const followUser = async (req , res) => {

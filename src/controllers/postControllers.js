@@ -6,11 +6,11 @@ import { postModel } from "../models/postmodel.js"
 //====================create post=====================
 export const createPost = async (req , res) => {
     try {
-        if (!req.user) {
+        if (!req.user._id) {
             return res.status(401).json({msg:'unauthorized'})
         }
-        const {author , content , Image} = req.body
-        const createPost = await postModel.create({author , content , Image})
+        const {content , Image} = req.body
+        const createPost = await postModel.create({ author:req.user._id ,content , Image})
         return res.status(201).json({msg:"post created successfully" , post:createPost})
     } catch (error) {
         console.error("Error:", error.message);
@@ -50,6 +50,9 @@ export const getPost = async (req , res) => {
 //====================edit post=====================
 export const editPost = async (req , res) => {
     try{
+        if (!req.user._id) {
+            return res.status(401).json({msg:'unauthorized'})
+        }
         const {content , Image} = req.body
         const {id} = req.params 
         const getPostById = await postModel.findByIdAndUpdate(id , {content , Image} , {new:true})
@@ -65,6 +68,9 @@ export const editPost = async (req , res) => {
 //====================delete post=====================
 export const deletePost = async (req , res) => {
     try{
+        if (!req.user._id) {
+            return res.status(401).json({msg:'unauthorized'})
+        }
         const {id} = req.params 
         const getPostById = await postModel.findByIdAndDelete(id)
         if (!getPostById) {
@@ -121,7 +127,7 @@ export const createLike = async (req , res) => {
 //====================delete like=====================
 export const deleteLike = async (req , res) => {
     try {
-        if (!req.user) {
+        if (!req.user._id) {
             return res.status(401).json({msg:'unauthorized'})
         }
         const {id} = req.params

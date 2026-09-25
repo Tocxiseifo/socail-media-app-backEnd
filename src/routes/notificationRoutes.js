@@ -4,6 +4,6 @@ import { getNotifications, markAllAsRead, markAsRead } from "../controllers/noti
 
 export const notificationRoutes = Router()
 
-notificationRoutes.get('/' , verifyUser , getNotifications)
 notificationRoutes.patch('/:notificationId/read' , verifyUser , markAsRead)
 notificationRoutes.patch('/read-all' , verifyUser , markAllAsRead)
+notificationRoutes.get('/' , verifyUser , getNotifications)
