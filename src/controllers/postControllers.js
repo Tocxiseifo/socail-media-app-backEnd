@@ -2,6 +2,7 @@ import { commentModel } from "../models/commentModel.js"
 import { likeModel } from "../models/likeModel.js"
 import { notificationModel } from "../models/notificationModel.js"
 import { postModel } from "../models/postmodel.js"
+import { getIo, onlineUser } from "../socket/socket.js"
 
 //====================create post=====================
 export const createPost = async (req , res) => {
@@ -110,12 +111,20 @@ export const createLike = async (req , res) => {
         if(post.author === req.user._id.toString()){ //use toString() function to convert the object into string so you can compare between them
             return res.status(200).json({msg:"no notification made here"})
         }else{
-            await notificationModel.create({
+            const notification =  await notificationModel.create({
                 recipient:post.author,
                 type:"like",
                 sender:req.user._id,
                 targetId:post._id    
             })
+            const socketId = onlineUser.get(post.author.toString())
+            if (!socketId) {
+                return res.status(404).json({msg:"the socket is not right"})
+            }else{
+                const io = getIo()
+                await notification.populate('sender' , 'username displayName avatar')
+                io.to(socketId).emit("notification" ,notification)
+            }
         }
         res.status(201).json({msg:"you like this post" , Like:like}) 
     } catch (error) {

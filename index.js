@@ -9,12 +9,14 @@ import { userRoutes } from './src/routes/userRoutes.js'
 import { notificationRoutes } from './src/routes/notificationRoutes.js'
 import {createServer} from "http"
 import { Server, Socket } from 'socket.io'
-import { verifySocketUser } from './src/middleware/socketMiddleware.js'
+import { initIo } from './src/socket/socket.js'
+
+//================Init server===================
 const app = express()
 app.use(express.json());
-
 dotenv.config()
 
+//===================Init DataBase==============
 const DatabaseUrl = process.env.MONGODB_URL
 mongoose.connect(DatabaseUrl)
 .then(() => console.log("✅ MongoDB Connected..."))
@@ -31,14 +33,11 @@ app.use('/api/notifications' , notificationRoutes)
 
 //=====================server=====================
 const server  =  createServer(app) //createserver() and make the value for it the app we made from express to make websocket
-
 const io = new Server(server) //connect websocket
-io.use(verifySocketUser)
-io.on('connection', (socket) => {
-    console.log(socket.id , socket.user)
-  console.log('A user connected');
-});
+initIo(io) //this function made to any controller need to connect with websocket can call it anywhere
+
+//===============run the server===============
 const port = 3300
 server.listen(port , () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
