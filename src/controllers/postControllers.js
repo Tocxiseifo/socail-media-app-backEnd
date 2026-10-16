@@ -93,7 +93,7 @@ export const createLike = async (req , res) => {
         const {id} = req.params
         const post = await postModel.findById(id)
         if (!post) {
-            return res.states(404).json({msg:"this post not found"})
+            return res.status(404).json({msg:"this post not found"})
         }
         const getLike = await likeModel.findOne({
             user:req.user._id ,
@@ -108,9 +108,7 @@ export const createLike = async (req , res) => {
         })
         post.likeCount += 1 
         await post.save();
-        if(post.author === req.user._id.toString()){ //use toString() function to convert the object into string so you can compare between them
-            return res.status(200).json({msg:"no notification made here"})
-        }else{
+        if(post.author.toString() !== req.user._id.toString()){ //use toString() function to convert the object into string so you can compare between them
             const notification =  await notificationModel.create({
                 recipient:post.author,
                 type:"like",
@@ -118,9 +116,7 @@ export const createLike = async (req , res) => {
                 targetId:post._id    
             })
             const socketId = onlineUser.get(post.author.toString())
-            if (!socketId) {
-                return res.status(404).json({msg:"the socket is not right"})
-            }else{
+            if (socketId) {
                 const io = getIo()
                 await notification.populate('sender' , 'username displayName avatar')
                 io.to(socketId).emit("notification" ,notification)
@@ -161,7 +157,7 @@ export const deleteLike = async (req , res) => {
     }
 }
 
-//====================crete comment=====================
+//====================create comment=====================
 export const createComment = async (req , res) => {
     try {
         if (!req.user) {
@@ -180,6 +176,22 @@ export const createComment = async (req , res) => {
         })
         post.commentCount += 1
         await post.save()
+        if(post.author.toString() === req.user._id.toString()){ //use toString() function to convert the object into string so you can compare between them
+            res.status(200).json({msg:"no notification made here"})
+        }else{
+            const notification =  await notificationModel.create({
+                recipient:post.author,
+                type:"comment",
+                sender:req.user._id,
+                targetId:post._id    
+            })
+            const socketId = onlineUser.get(post.author.toString())
+            if (socketId) {
+                const io = getIo()
+                await notification.populate('sender' , 'username displayName avatar')
+                io.to(socketId).emit("notification" ,notification)
+            }
+        }
         res.status(201).json({msg:"comment added successfully" , comment:createComment})
     } catch (error) {
         console.error("Error:", error.message);

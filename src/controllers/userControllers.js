@@ -2,6 +2,7 @@ import { followModel } from "../models/followModel.js"
 import { notificationModel } from "../models/notificationModel.js"
 import { postModel } from "../models/postmodel.js"
 import { userModel } from "../models/usermodel.js"
+import { getIo, onlineUser } from "../socket/socket.js"
 
 //====================fetch user data=====================
 export const getUser = async (req , res) => {
@@ -118,15 +119,22 @@ export const followUser = async (req , res) => {
             follower:req.user._id,
             following:id
         })
+
         const fetchFollower = await userModel.findById(req.user._id)
         if (!fetchFollower) {
-            return res.status(409).json({msg:"user is already follow you"})
+            return res.status(404).json({msg:"couldn't find follower"})
         }
         fetchFollower.following++
         fetchUser.followers++
         await fetchUser.save()
         await fetchFollower.save()
         const notification = await notificationModel.create({recipient:id , sender:req.user._id , type:"follow" , targetId:id ,isRead:false})
+        const socketId = onlineUser.get(id.toString())
+        if (socketId) {
+            const io = getIo()
+            await notification.populate('sender' , 'username displayName avatar')
+            io.to(socketId).emit("notification" , notification)
+        }
         return res.status(201).json({msg:"user follow successfully" , followUser:fetchUser})
     } catch (error) {
         console.error("Error:", error.message);

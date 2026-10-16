@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import { userModel } from '../models/usermodel.js'
 
 export const verifySocketUser = async (socket , next) => {
-    const headerValue = socket.handshake.headers['authorization']
+    const headerValue = socket.handshake.auth.token
     if (!headerValue) {
         socket.user = null
        return next(new Error("Authentication failed"))
