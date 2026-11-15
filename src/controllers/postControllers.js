@@ -22,9 +22,9 @@ export const createPost = async (req , res) => {
 //====================fetch all posts=====================
 export const getFeed = async (req , res) => {
     try {
-        const getAllFeed = await postModel.find().sort({ createdAt: -1 }).lean()
+        const getAllFeed = await postModel.find().sort({ createdAt: -1 }).populate('author' , 'username displayName avatar').lean()
         if (getAllFeed.length === 0) {
-            return res.status(400).json({msg:'no feeds found'})
+            return res.status(400).json({msg: "feeds fetched successfully",feeds: []})
         }
         return res.status(200).json({msg:"feeds fetched successfully" , feeds:getAllFeed})
     } catch (error) {

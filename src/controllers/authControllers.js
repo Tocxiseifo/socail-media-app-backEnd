@@ -4,7 +4,13 @@ import bcrypt from 'bcrypt'
 export const register = async (req , res) => {
     try {
         const {email , username , displayName , password} = req.body
-        const user = await userModel.findOne({email , username , displayName})
+        const user = await userModel. userModel.findOne({
+            $or:[
+                {email},
+                {username},
+                {displayName}
+            ]
+        })
         if (user) {
             return res.status(404).json({msg:"this email or userName or displayName is used already"})
         }
@@ -12,7 +18,7 @@ export const register = async (req , res) => {
 
         const newUser = await userModel.create({email , username , displayName , password:hashPassword})
         const token = jwt.sign({id:newUser._id} , process.env.JWT_SECRET_KEY , {expiresIn:'1d'})
-        return res.status(201).json({msg:"user made successfully" , user:{id:newUser._id , userName:username} , token})
+        return res.status(201).json({msg:"user made successfully" , user:{ id:newUser._id, username:newUser.username, email:newUser.email, displayName:newUser.displayName} , token})
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
@@ -26,7 +32,7 @@ export const logIn = async (req , res) => {
         if (!user) {
             return res.status(400).json({msg:"email or password is wrong"})
         }
-        const comperePassword = bcrypt.compare(password , user.password)
+        const comperePassword = await bcrypt.compare(password , user.password)
         if (comperePassword) {
             const accessToken = jwt.sign({id:user._id} , process.env.JWT_SECRET_KEY , {expiresIn:'1d'})
             const refreshToken = jwt.sign({id:user._id} , process.env.JWT_SECRET_KEY , {expiresIn:'30d'})
@@ -44,7 +50,7 @@ export const logIn = async (req , res) => {
 
 export const logOut = async (req , res) => {
     try {
-        const logOut = await userModel.findByIdAndUpdate(req.user_id , {$unset:{refreshToken: ''}} , {new:true})
+        const logOut = await userModel.findByIdAndUpdate(req.user._id , {$unset:{refreshToken: ''}} , {new:true})
         if (!logOut) {
             return res.status(404).json({msg:"couldn't find this user"})
         }
