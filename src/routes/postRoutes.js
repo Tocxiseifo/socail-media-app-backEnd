@@ -5,6 +5,7 @@ import { createComment, createLike, createPost, deleteComment, deleteLike, delet
 export const postRoutes = Router()
 
 postRoutes.post('/' , verifyUser , createPost)
+postRoutes.get('/feed' , verifyUser , getFeed)
 postRoutes.get('/:id' , verifyUser , getPost)
 postRoutes.patch('/:id' , verifyUser , editPost)
 postRoutes.delete('/:id' , verifyUser , deletePost)
@@ -14,4 +15,3 @@ postRoutes.post('/comment/:id' , verifyUser , createComment)
 postRoutes.get('/comment' , verifyUser , getComment)
 postRoutes.patch('/comment/:id' , verifyUser , editComment)
 postRoutes.delete('/comment/:id' , verifyUser , deleteComment)
-postRoutes.get('/feed' , verifyUser , getFeed)

@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 export const register = async (req , res) => {
     try {
         const {email , username , displayName , password} = req.body
-        const user = await userModel. userModel.findOne({
+        const user = await userModel.findOne({
             $or:[
                 {email},
                 {username},
