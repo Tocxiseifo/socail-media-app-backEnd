@@ -14,8 +14,8 @@ import { initIo } from './src/socket/socket.js'
 
 //================Init server===================
 const app = express()
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", credentials: true }))
 app.use(express.json());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000', credentials: true }))
 dotenv.config()
 
 //===================Init DataBase==============
@@ -35,7 +35,7 @@ app.use('/api/notifications' , notificationRoutes)
 
 //=====================server=====================
 const server  =  createServer(app) //createserver() and make the value for it the app we made from express to make websocket
-const io = new Server(server, { cors: { origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000', credentials: true } }) //connect websocket
+const io = new Server(server, { cors: { origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", credentials: true } }) //connect websocket
 initIo(io) //this function made to any controller need to connect with websocket can call it anywhere
 
 //===============run the server===============
