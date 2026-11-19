@@ -23,10 +23,28 @@ export const createPost = async (req , res) => {
 export const getFeed = async (req , res) => {
     try {
         const getAllFeed = await postModel.find().sort({ createdAt: -1 }).populate('author' , 'username displayName avatar').lean()
+        const feedWithLikeStatute = await Promise.all(
+            getAllFeed.map(async(post) =>{
+                if (!req.user) {
+                    return {
+                        ...post,
+                        likedByMe: false,
+                    };
+                }
+                const liked = await likeModel.findOne({
+                    post:post._id,
+                    user:req.user._id
+                })
+                return {
+                    ...post,
+                    likedByMe:!!liked,
+                }
+            })
+        )
         if (getAllFeed.length === 0) {
             return res.status(400).json({msg: "feeds fetched successfully",feeds: []})
         }
-        return res.status(200).json({msg:"feeds fetched successfully" , feeds:getAllFeed})
+        return res.status(200).json({msg:"feeds fetched successfully" , feeds:feedsWithLikeStatus})
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
@@ -84,7 +102,7 @@ export const deletePost = async (req , res) => {
     }
 }
 
-//====================crete like=====================
+//====================create like=====================
 export const createLike = async (req , res) => {
     try {
         if (!req.user) {
@@ -122,7 +140,7 @@ export const createLike = async (req , res) => {
                 io.to(socketId).emit("notification" ,notification)
             }
         }
-        res.status(201).json({msg:"you like this post" , Like:like}) 
+        res.status(201).json({msg:"you like this post" , likeCount: post.likeCount ,likedByMe: true}) 
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
@@ -150,7 +168,7 @@ export const deleteLike = async (req , res) => {
         const removeLike = await likeModel.findByIdAndDelete(getLike._id)
         post.likeCount-- 
         await post.save();
-        res.status(200).json({msg:"you like this post" , Like:removeLike}) 
+        res.status(200).json({msg:"you like this post"  , likeCount: post.likeCount , likedByMe: false}) 
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
