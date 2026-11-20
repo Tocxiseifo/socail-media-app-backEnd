@@ -31,10 +31,10 @@ export const getFeed = async (req , res) => {
                         likedByMe: false,
                     };
                 }
-                const liked = await likeModel.findOne({
+                const liked =   await likeModel.findOne({
                     post:post._id,
                     user:req.user._id
-                })
+                }) 
                 return {
                     ...post,
                     likedByMe:!!liked,
@@ -44,7 +44,7 @@ export const getFeed = async (req , res) => {
         if (getAllFeed.length === 0) {
             return res.status(400).json({msg: "feeds fetched successfully",feeds: []})
         }
-        return res.status(200).json({msg:"feeds fetched successfully" , feeds:feedsWithLikeStatus})
+        return res.status(200).json({msg:"feeds fetched successfully" , feeds:feedWithLikeStatute})
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: error.message });
